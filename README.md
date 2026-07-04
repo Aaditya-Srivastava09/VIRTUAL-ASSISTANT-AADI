@@ -59,7 +59,7 @@ Because everything runs client-side, **each user's microphone audio stays in the
 ```bash
 git clone https://github.com/<your-username>/<repo-name>.git
 cd <repo-name>
-python run_local.py
+python run app.py
 ```
 
 This starts a local server and opens AADI in your default browser at `http://localhost:8000`. Other devices on the same WiFi can access it too, via the network URL printed in the terminal.
