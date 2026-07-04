@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050810;
+    --cyan:#2FE3FF;
+    --cyan-dim: rgba(47,227,255,0.35);
+    --amber:#FFB454;
+    --panel: rgba(47,227,255,0.05);
+    --panel-border: rgba(47,227,255,0.22);
+    --text:#DFF7FF;
+    --text-dim:#5E7A88;
+    --danger:#FF5C6C;
+  }
+  *{box-sizing:border-box;}
+  html, body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(47,227,255,0.12), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(47,227,255,0.025) 0px, rgba(47,227,255,0.025) 1px, transparent 1px, transparent 3px),
+      var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+  }
+  .frame{
+    max-width:760px;
+    margin:0 auto;
+    padding:22px 18px 30px;
+    position:relative;
+    border:1px solid var(--panel-border);
+    border-radius:4px;
+    background:var(--panel);
+    min-height:100vh;
+  }
+  .frame::before, .frame::after,
+  .frame .bl, .frame .br{
+    content:'';
+    position:absolute;
+    width:20px;height:20px;
+    border-color:var(--cyan);
+    border-style:solid;
+    border-width:0;
+    opacity:.8;
+  }
+  .frame::before{top:-1px;left:-1px;border-top-width:2px;border-left-width:2px;}
+  .frame::after{top:-1px;right:-1px;border-top-width:2px;border-right-width:2px;}
+  .frame .bl{bottom:-1px;left:-1px;border-bottom-width:2px;border-left-width:2px;}
+  .frame .br{bottom:-1px;right:-1px;border-bottom-width:2px;border-right-width:2px;}
+
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'Orbitron',sans-serif;
+    font-size:10px;letter-spacing:2px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-right:6px;box-shadow:0 0 6px var(--cyan);animation:blink 1.6s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .brand{
+    font-family:'Orbitron',sans-serif;
+    font-weight:800;
+    font-size:clamp(28px, 8vw, 40px);
+    letter-spacing:6px;
+    margin:6px 0 0;
+    text-align:center;
+    color:var(--cyan);
+    text-shadow:0 0 18px var(--cyan-dim), 0 0 40px rgba(47,227,255,0.15);
+  }
+  .tagline{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:11px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    margin-top:2px;
+    font-family:'Orbitron',sans-serif;
+  }
+
+  .orb-zone{
+    display:flex;align-items:center;justify-content:center;
+    margin:30px 0 10px;position:relative;height:210px;
+  }
+  .ring{position:absolute;border-radius:50%;border:1px solid var(--cyan-dim);}
+  .ring.spin1{width:170px;height:170px;border-style:dashed;animation:spin 12s linear infinite;}
+  .ring.spin2{width:200px;height:200px;border-top-color:var(--cyan);border-right-color:transparent;border-bottom-color:transparent;border-left-color:transparent;animation:spin 3.5s linear infinite reverse;}
+  .ring.pulse{width:130px;height:130px;animation:pulse 2.4s ease-out infinite;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes pulse{0%{transform:scale(.85);opacity:.6;}100%{transform:scale(1.3);opacity:0;}}
+
+  .orb{
+    width:100px;height:100px;border-radius:50%;border:none;cursor:pointer;
+    background:radial-gradient(circle at 35% 30%, #0d1b24, #050810 70%);
+    box-shadow:0 0 26px var(--cyan-dim), inset 0 0 20px rgba(47,227,255,0.25);
+    display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--cyan);
+    transition:box-shadow .3s ease, transform .15s ease;
+    z-index:2;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .orb:hover{transform:scale(1.04);}
+  .orb.active{
+    box-shadow:0 0 46px rgba(255,180,84,0.6), inset 0 0 24px rgba(255,180,84,0.35);
+    color:var(--amber);
+    animation:mic-pulse 0.9s ease-in-out infinite;
+  }
+  .orb.wake{
+    box-shadow:0 0 30px rgba(47,227,255,0.55), inset 0 0 20px rgba(47,227,255,0.3);
+  }
+  @keyframes mic-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+  .status{
+    font-family:'Orbitron',sans-serif;
+    font-size:13px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--text-dim);text-align:center;min-height:18px;margin-bottom:10px;
+    padding:0 10px;
+  }
+  .status.active{color:var(--amber);}
+  .status.on{color:var(--cyan);}
+  .status.err{color:var(--danger);}
+
+  .wave{display:flex;gap:4px;justify-content:center;align-items:flex-end;height:20px;margin-bottom:8px;}
+  .wave span{width:3px;background:var(--amber);border-radius:2px;animation:bar .9s ease-in-out infinite;opacity:0;}
+  .wave.on span{opacity:1;}
+  .wave span:nth-child(1){animation-delay:0s;} .wave span:nth-child(2){animation-delay:.1s;}
+  .wave span:nth-child(3){animation-delay:.2s;} .wave span:nth-child(4){animation-delay:.3s;}
+  .wave span:nth-child(5){animation-delay:.4s;}
+  @keyframes bar{0%,100%{height:4px;}50%{height:18px;}}
+
+  .controls{display:flex;gap:10px;justify-content:center;align-items:center;margin:6px 0 18px;flex-wrap:wrap;}
+  select, .toggle-label{
+    background:rgba(47,227,255,0.05);border:1px solid var(--panel-border);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:12.5px;padding:7px 12px;border-radius:3px;
+  }
+  select{cursor:pointer;}
+  .toggle-label{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+  .toggle-label input{accent-color:var(--cyan);}
+  .wake-badge{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1.5px;
+    padding:4px 10px;border-radius:3px;border:1px solid var(--panel-border);
+    color:var(--text-dim);
+  }
+  .wake-badge.on{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px var(--cyan-dim);}
+
+  .log{text-align:left;max-height:320px;overflow-y:auto;padding-right:4px;}
+  .bubble{padding:10px 14px;border-radius:3px;margin:6px 0;max-width:88%;font-size:14.5px;line-height:1.4;animation:rise .25s ease;border-left:2px solid transparent;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .bubble.user{margin-left:auto;background:rgba(255,180,84,0.08);border-left-color:var(--amber);text-align:right;}
+  .bubble.aadi{margin-right:auto;background:var(--panel);border-left-color:var(--cyan);}
+  .bubble.error{margin-right:auto;background:rgba(255,92,108,0.08);border-left-color:var(--danger);color:#ffb3ba;}
+  .bubble .who{display:block;font-family:'Orbitron',sans-serif;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px;}
+  .log::-webkit-scrollbar{width:5px;}
+  .log::-webkit-scrollbar-thumb{background:rgba(47,227,255,0.2);border-radius:4px;}
+
+  .hint{color:var(--text-dim);font-size:11.5px;margin-top:14px;line-height:1.7;text-align:center;}
+  .hint b{color:var(--cyan);font-weight:600;}
+
+  @media (max-width: 480px){
+    .frame{padding:16px 12px 24px;}
+    .orb-zone{height:180px;margin:20px 0 6px;}
+    .orb{width:84px;height:84px;font-size:30px;}
+    .ring.spin1{width:145px;height:145px;}
+    .ring.spin2{width:170px;height:170px;}
+    .ring.pulse{width:110px;height:110px;}
+    .bubble{font-size:13.5px;max-width:94%;}
+    .controls{gap:8px;}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <span class="bl"></span><span class="br"></span>
+  <div class="topbar">
+    <span><span class="dot"></span>SYS ONLINE</span>
+    <span id="wakeBadgeTop" class="wake-badge">WAKE WORD: OFF</span>
+  </div>
+
+  <h1 class="brand">A A D I</h1>
+  <div class="tagline">Autonomous Assistant · Diagnostic Interface</div>
+
+  <div class="orb-zone">
+    <div class="ring pulse"></div>
+    <div class="ring spin1"></div>
+    <div class="ring spin2"></div>
+    <button class="orb" id="orbBtn" title="Tap to speak once">🎤</button>
+  </div>
+
+  <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="status" id="status">Tap the orb, or enable wake word below</div>
+
+  <div class="controls">
+    <select id="langSelect">
+      <option value="en-IN">English (India)</option>
+      <option value="hi-IN">Hindi</option>
+      <option value="en-US">English (US)</option>
+    </select>
+    <label class="toggle-label">
+      <input type="checkbox" id="wakeToggle" />
+      🎧 Hands-free — say "Aadi"
+    </label>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="hint">
+    Say <b>"Aadi"</b> to wake me up · Try <b>"square root of 144"</b> ·
+    <b>"25 percent of 450"</b> · <b>"play kesariya"</b> · <b>"kholo youtube"</b> ·
+    <b>"mausam batao prayagraj ka"</b> · or just ask me anything
+  </div>
+</div>
+
+<script>
+const orbBtn = document.getElementById('orbBtn');
+const statusEl = document.getElementById('status');
+const waveEl = document.getElementById('wave');
+const logEl = document.getElementById('log');
+const langSelect = document.getElementById('langSelect');
+const wakeToggle = document.getElementById('wakeToggle');
+const wakeBadgeTop = document.getElementById('wakeBadgeTop');
+
+let appState = 'idle';
+let wakeModeOn = false;
+
+// ---------------- OPTIONAL: paste a free YouTube Data API v3 key here ----------------
+// Without a key, "play <song>" opens YouTube search results (you tap the first video).
+// With a free key, AADI plays the first result automatically — no tap needed.
+// Get one free at https://console.cloud.google.com/apis/library/youtube.googleapis.com
+const YOUTUBE_API_KEY = "";
+
+function setStatus(text, mode){
+  statusEl.textContent = text;
+  statusEl.className = 'status' + (mode ? ' ' + mode : '');
+}
+function setOrb(mode){
+  orbBtn.classList.remove('active','wake');
+  if (mode) orbBtn.classList.add(mode);
+}
+function addBubble(who, text, type){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (type || (who === 'You' ? 'user' : 'aadi'));
+  b.innerHTML = '<span class="who">' + who + '</span>' + text;
+  logEl.appendChild(b);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function speak(text, onEnd){
+  try {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1.03;
+    utter.pitch = 0.95;
+    utter.onend = () => { if (onEnd) onEnd(); };
+    utter.onerror = () => { if (onEnd) onEnd(); };
+    window.speechSynthesis.speak(utter);
+  } catch(e) {
+    if (onEnd) onEnd();
+  }
+}
+
+// ---------------- Speech Recognition setup ----------------
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let wakeRecognition = null;
+let commandRecognition = null;
+let suppressWakeRestart = false;
+let wakeRestartTimer = null;
+let turnHandled = false;
+
+const WAKE_ALTERNATES = ['aadi', 'audi', 'aadhi', 'addy', 'hey aadi', 'ok aadi', 'हाय आदि', 'आदि'];
+
+function scheduleWakeRestart(delay){
+  if (!wakeModeOn) return;
+  clearTimeout(wakeRestartTimer);
+  wakeRestartTimer = setTimeout(() => {
+    if (!wakeModeOn) return;
+    try { wakeRecognition.start(); } catch(e) { /* already running, ignore */ }
+  }, delay);
+}
+
+if (!SpeechRecognitionAPI) {
+  setStatus('Speech recognition not supported. Please use Chrome or Edge.', 'err');
+  orbBtn.disabled = true;
+  wakeToggle.disabled = true;
+} else {
+  wakeRecognition = new SpeechRecognitionAPI();
+  wakeRecognition.continuous = true;
+  wakeRecognition.interimResults = true;
+  wakeRecognition.maxAlternatives = 1;
+
+  wakeRecognition.onresult = (event) => {
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript.toLowerCase();
+      if (WAKE_ALTERNATES.some(w => transcript.includes(w))) {
+        suppressWakeRestart = true;
+        try { wakeRecognition.stop(); } catch(e){}
+        activateAssistant();
+        break;
+      }
+    }
+  };
+  wakeRecognition.onend = () => {
+    if (wakeModeOn && !suppressWakeRestart) scheduleWakeRestart(300);
+    suppressWakeRestart = false;
+  };
+  wakeRecognition.onerror = (event) => {
+    if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+      setStatus('Microphone permission denied. Please allow mic access.', 'err');
+      wakeModeOn = false;
+      wakeToggle.checked = false;
+      updateWakeBadge();
+    } else if (event.error === 'network') {
+      scheduleWakeRestart(1500);
+    } else {
+      // no-speech, aborted, audio-capture, etc. — just quietly retry
+      scheduleWakeRestart(500);
+    }
+  };
+
+  commandRecognition = new SpeechRecognitionAPI();
+  commandRecognition.continuous = false;
+  commandRecognition.interimResults = false;
+  commandRecognition.maxAlternatives = 1;
+
+  commandRecognition.onstart = () => {
+    turnHandled = false;
+    appState = 'activeListening';
+    setOrb('active');
+    waveEl.classList.add('on');
+    setStatus('Listening...', 'active');
+  };
+  commandRecognition.onend = () => {
+    waveEl.classList.remove('on');
+    // Safety net: if the browser gave up silently (no result, no error), don't get stuck
+    if (!turnHandled) {
+      turnHandled = true;
+      setTimeout(resumeAfterTurn, 150);
+    }
+  };
+  commandRecognition.onerror = (event) => {
+    turnHandled = true;
+    setOrb(null);
+    waveEl.classList.remove('on');
+    if (event.error === 'network') {
+      const msg = "I'm having trouble connecting to the network. Please check your internet connection.";
+      setStatus('Connection issue', 'err');
+      addBubble('AADI', msg, 'error');
+      speak(msg, resumeAfterTurn);
+    } else if (event.error === 'no-speech') {
+      setStatus("Didn't hear you", 'err');
+      resumeAfterTurn();
+    } else if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+      setStatus('Microphone permission denied.', 'err');
+    } else {
+      // aborted or other transient errors — recover quietly, no scary message
+      resumeAfterTurn();
+    }
+  };
+  commandRecognition.onresult = (event) => {
+    turnHandled = true;
+    const transcript = event.results[0][0].transcript;
+    addBubble('You', transcript);
+    handleCommand(transcript);
+  };
+}
+
+function updateWakeBadge(){
+  wakeBadgeTop.textContent = 'WAKE WORD: ' + (wakeModeOn ? 'ON' : 'OFF');
+  wakeBadgeTop.className = 'wake-badge' + (wakeModeOn ? ' on' : '');
+  setOrb(wakeModeOn ? 'wake' : null);
+}
+
+wakeToggle.addEventListener('change', () => {
+  wakeModeOn = wakeToggle.checked;
+  updateWakeBadge();
+  if (wakeModeOn) {
+    setStatus('Standing by — say "Aadi"', 'on');
+    try { wakeRecognition.start(); } catch(e){}
+  } else {
+    clearTimeout(wakeRestartTimer);
+    try { wakeRecognition.stop(); } catch(e){}
+    setStatus('Tap the orb, or enable wake word below');
+    setOrb(null);
+  }
+});
+
+orbBtn.addEventListener('click', () => {
+  if (!commandRecognition) return;
+  if (appState === 'activeListening') {
+    commandRecognition.stop();
+    return;
+  }
+  if (wakeModeOn) { suppressWakeRestart = true; clearTimeout(wakeRestartTimer); try { wakeRecognition.stop(); } catch(e){} }
+  startCommandListening();
+});
+
+function activateAssistant(){
+  setStatus('Activated', 'active');
+  speak('Yes boss.', () => { startCommandListening(); });
+}
+
+function startCommandListening(){
+  commandRecognition.lang = langSelect.value;
+  try { commandRecognition.start(); } catch(e){}
+}
+
+function resumeAfterTurn(){
+  setOrb(null);
+  if (wakeModeOn) {
+    setStatus('Standing by — say "Aadi"', 'on');
+    scheduleWakeRestart(300);
+  } else {
+    setStatus('Tap the orb, or enable wake word below');
+  }
+}
+
+function openTab(url){ window.open(url, '_blank'); }
+
+function respond(text){
+  addBubble('AADI', text);
+  setStatus('Speaking...', 'active');
+  speak(text, resumeAfterTurn);
+}
+
+// ---------------- Text normalization ----------------
+function normalizeTranscript(raw){
+  let t = raw;
+  t = t.replace(/%/g, ' percent ');
+  let guard = 0;
+  while (/\d,\d{3}/.test(t) && guard < 5) { t = t.replace(/(\d),(\d{3})/g, '$1$2'); guard++; }
+  t = t.replace(/×/g, ' times ');
+  t = t.replace(/÷/g, ' divided by ');
+  t = t.replace(/\s+/g, ' ').trim();
+  return t;
+}
+
+function stripFillers(text, fillers){
+  let t = text;
+  fillers.forEach(f => {
+    const re = new RegExp('\\b' + f + '\\b', 'gi');
+    t = t.replace(re, ' ');
+  });
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+function round(n){ return Math.round(n * 100000) / 100000; }
+
+function formatNumber(n){
+  if (!isFinite(n)) return "an infinitely large number";
+  if (Math.abs(n) >= 1e6) {
+    const exp = n.toExponential(2);
+    const [mantissa, exponent] = exp.split('e');
+    const expNum = parseInt(exponent, 10);
+    return `${mantissa} times ten to the power of ${expNum}`;
+  }
+  return round(n).toString();
+}
+
+// ---------------- Advanced calculator ----------------
+function factorial(n){
+  if (n < 0 || !Number.isInteger(n)) return null;
+  if (n > 170) return Infinity;
+  let r = 1;
+  for (let i = 2; i <= n; i++) r *= i;
+  return r;
+}
+
+function tryAdvancedMath(c){
+  let m;
+  if ((m = c.match(/factorial of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*factorial/))) {
+    const n = parseFloat(m[1]);
+    const f = factorial(n);
+    return f === null ? "Factorial only works for whole numbers zero or above." : `The factorial of ${n} is ${formatNumber(f)}`;
+  }
+  if (m = c.match(/cube root of (-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    return `The cube root of ${n} is ${round(Math.cbrt(n))}`;
+  }
+  if ((m = c.match(/square root of (-?\d+(\.\d+)?)/)) || (m = c.match(/root of (-?\d+(\.\d+)?)/))) {
+    const n = parseFloat(m[1]);
+    if (n < 0) return "I can't take the square root of a negative number.";
+    return `The square root of ${n} is ${round(Math.sqrt(n))}`;
+  }
+  if ((m = c.match(/square of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*squared/))) {
+    const n = parseFloat(m[1]);
+    return `${n} squared is ${formatNumber(n * n)}`;
+  }
+  if ((m = c.match(/cube of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*cubed/))) {
+    const n = parseFloat(m[1]);
+    return `${n} cubed is ${formatNumber(n ** 3)}`;
+  }
+  if (m = c.match(/(-?\d+(\.\d+)?)\s*percent(age)?\s*of\s*(-?\d+(\.\d+)?)/)) {
+    const p = parseFloat(m[1]);
+    const of = parseFloat(m[4]);
+    return `${p} percent of ${of} is ${round((p / 100) * of)}`;
+  }
+  if (m = c.match(/(-?\d+(\.\d+)?)\s*(?:to the power of|power of|power|raised to)\s*(-?\d+(\.\d+)?)/)) {
+    const base = parseFloat(m[1]);
+    const exp = parseFloat(m[3]);
+    return `${base} to the power of ${exp} is ${formatNumber(base ** exp)}`;
+  }
+  if (m = c.match(/\bsin(?:e)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Sine of ${m[1]} degrees is ${round(Math.sin(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\bcos(?:ine)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Cosine of ${m[1]} degrees is ${round(Math.cos(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\btan(?:gent)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Tangent of ${m[1]} degrees is ${round(Math.tan(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\b(?:natural log|ln)\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    if (n <= 0) return "Logarithm is only defined for positive numbers.";
+    return `The natural log of ${n} is ${round(Math.log(n))}`;
+  }
+  if (m = c.match(/\blog\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    if (n <= 0) return "Logarithm is only defined for positive numbers.";
+    return `The log of ${n} is ${round(Math.log10(n))}`;
+  }
+  return null;
+}
+
+function tryBasicArithmetic(c){
+  let expr = c.replace(/calculate/g, '')
+    .replace(/plus/g, '+').replace(/minus/g, '-')
+    .replace(/times|multiplied by|into/g, '*')
+    .replace(/divided by/g, '/')
+    .trim();
+  if (!/^[0-9+\-*/(). ]+$/.test(expr) || expr === '') return null;
+  try {
+    const result = Function('"use strict";return (' + expr + ')')();
+    return `The answer is ${formatNumber(result)}`;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------------- YouTube ----------------
+async function playSongOnYouTube(song){
+  respond('Playing ' + song + ' on YouTube');
+  if (YOUTUBE_API_KEY) {
+    try {
+      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&q=${encodeURIComponent(song)}&key=${YOUTUBE_API_KEY}`);
+      const data = await res.json();
+      const videoId = data && data.items && data.items[0] && data.items[0].id && data.items[0].id.videoId;
+      if (videoId) { openTab(`https://www.youtube.com/watch?v=${videoId}&autoplay=1`); return; }
+    } catch (e) { /* fall through to search */ }
+  }
+  openTab('https://www.youtube.com/results?search_query=' + encodeURIComponent(song));
+}
+
+// ---------------- Wikipedia ----------------
+async function lookupWikipedia(query){
+  try {
+    const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(query));
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.extract || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------------- Sites ----------------
+const SITES = {
+  'google': 'https://google.com', 'youtube': 'https://youtube.com',
+  'facebook': 'https://facebook.com', 'instagram': 'https://instagram.com',
+  'linkedin': 'https://linkedin.com', 'amazon': 'https://www.amazon.in',
+  'flipkart': 'https://flipkart.com', 'myntra': 'https://myntra.com',
+  'whatsapp': 'https://web.whatsapp.com', 'chat gpt': 'https://chatgpt.com',
+  'chatgpt': 'https://chatgpt.com', 'claude': 'https://claude.ai',
+};
+
+// ---------------- Command handling (fuzzy, keyword-based, Hinglish-aware) ----------------
+async function handleCommand(rawTextIn){
+  const rawText = normalizeTranscript(rawTextIn);
+  const c = rawText.toLowerCase().trim();
+  setStatus('Thinking...', 'active');
+
+  // ---- Casual conversation (checked early so small talk never falls through) ----
+  if (/\b(hello|hi|hey|namaste|namaskar)\b/.test(c) && c.length < 25) {
+    respond('Hello! How can I help you today?'); return;
+  }
+  if (/\bhow are you\b|\bkaise ho\b|\bkaisi ho\b/.test(c)) {
+    respond("I'm doing great, thanks for asking! What can I do for you?"); return;
+  }
+  if (/\bthank(s| you)\b|\bshukriya\b|\bdhanyavad\b/.test(c)) {
+    respond("You're welcome!"); return;
+  }
+  if (/\b(bye|goodbye|alvida|tata)\b/.test(c)) {
+    respond('Goodbye! Talk soon.'); return;
+  }
+  if (/\bwho are you\b|\bapna naam\b|\btumhara naam\b/.test(c)) {
+    respond("I'm AADI, your personal voice assistant. Ask me to open a website, play a song, do a calculation, or answer a question.");
+    return;
+  }
+  if (/\bgreet me\b/.test(c)) {
+    respond("Hey there! Hope you're having a great day."); return;
+  }
+
+  // ---- Math (checked early since numbers are unambiguous) ----
+  const mathTriggers = ['factorial','square','cube','percent','power','root','sin','cos','tan','log','calculate'];
+  if (mathTriggers.some(t => c.includes(t))) {
+    const adv = tryAdvancedMath(c);
+    if (adv) { respond(adv); return; }
+    const basic = tryBasicArithmetic(c);
+    if (basic) { respond(basic); return; }
+  }
+
+  // ---- Open a website (Hinglish: kholo) ----
+  if (c.includes('open') || c.includes('kholo') || c.includes('khol do')) {
+    const match = Object.keys(SITES).find(key => c.includes(key));
+    if (match) { openTab(SITES[match]); respond('Opening ' + match); return; }
+  }
+
+  // ---- Play a song (Hinglish: gaana, bajao, chalao) ----
+  const playTriggers = ['play', 'gaana', 'bajao', 'chalao', 'song laga'];
+  if (playTriggers.some(t => c.includes(t))) {
+    let song = null;
+    let m = rawText.match(/(?:play|gaana|bajao|chalao)\s+(.+)/i);
+    if (m) song = m[1];
+    if (!song) song = stripFillers(rawText, ['play','gaana','bajao','chalao','song','laga','do','please','kar']);
+    song = song.replace(/[?.!]/g, '').trim();
+    if (!song) { respond('Which song should I play?'); return; }
+    await playSongOnYouTube(song);
+    return;
+  }
+
+  // ---- Time / date ----
+  if (c.includes('time') || c.includes('samay') || c.includes('baje')) {
+    const now = new Date();
+    respond('The time is ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+    return;
+  }
+  if (c.includes('date') || c.includes('tareekh') || c.includes('aaj kya')) {
+    const now = new Date();
+    respond("Today's date is " + now.toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'}));
+    return;
+  }
+
+  // ---- Weather (Hinglish: mausam) — robust city extraction ----
+  if (c.includes('weather') || c.includes('mausam') || c.includes('temperature')) {
+    let city = null;
+    let m = c.match(/(?:weather|mausam|temperature)\D*?\bin\b\s+([a-z\s]+)/) || c.match(/([a-z\s]+?)\s*(?:ka|ke|ki)?\s*mausam/);
+    if (m) city = m[1];
+    if (!city) city = stripFillers(c, ['whats','what\'s','the','weather','mausam','temperature','check','tell me','forecast','of','today','right now','currently','please','can you','batao','ka','ke','ki']);
+    city = city.replace(/[?.!]/g, '').trim();
+    if (!city) city = 'lucknow';
+    try {
+      const geo = await (await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1')).json();
+      if (!geo.results) { respond("I couldn't find that city."); return; }
+      const { latitude, longitude } = geo.results[0];
+      const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`)).json();
+      respond(`The current temperature in ${city} is ${w.current_weather.temperature} degrees Celsius`);
+    } catch (e) {
+      respond("Sorry, I couldn't fetch the weather. Please check your internet connection.");
+    }
+    return;
+  }
+
+  // ---- Jokes (Hinglish: chutkula, hasao) ----
+  if (c.includes('joke') || c.includes('make me laugh') || c.includes('chutkula') || c.includes('hasao')) {
+    try {
+      const res = await fetch('https://official-joke-api.appspot.com/random_joke');
+      const data = await res.json();
+      respond(data.setup + ' ... ' + data.punchline);
+    } catch (e) {
+      respond("Why don't skeletons fight each other? They don't have the guts.");
+    }
+    return;
+  }
+
+  // ---- Explicit Google search ----
+  if (c.includes('search') || c.includes('google kar') || c.includes('dhundo')) {
+    const q = stripFillers(c, ['search','google','for','kar','dhundo','please']);
+    if (q) { openTab('https://www.google.com/search?q=' + encodeURIComponent(q)); respond('Searching for ' + q); return; }
+  }
+
+  // ---- Wikipedia / general knowledge ----
+  const wikiHints = ['who is','what is','where is','when is','why is','how is','tell me about','define','explain','wikipedia','kaun hai','kya hai','kahan hai'];
+  if (wikiHints.some(h => c.includes(h))) {
+    let q = stripFillers(c, ['wikipedia','who','is','what','where','when','why','how','tell me about','define','explain','kaun','hai','kya','kahan','search','the']);
+    q = q.replace(/[?.!]/g, '').trim();
+    if (!q) { respond('Who or what should I look up?'); return; }
+    const extract = await lookupWikipedia(q);
+    if (extract) { respond(extract); return; }
+    respond("Sorry, I couldn't find anything about " + q + ".");
+    return;
+  }
+
+  // ---- Last resort: try Wikipedia on the whole sentence before giving up ----
+  const cleaned = stripFillers(c, ['aadi','please','can you','could you','tell me','batao','bata do']).replace(/[?.!]/g,'').trim();
+  if (cleaned.split(' ').length <= 6 && cleaned.length > 2) {
+    const extract = await lookupWikipedia(cleaned);
+    if (extract) { respond(extract); return; }
+  }
+
+  respond("Sorry, I don't understand that yet. You can ask me to open a website, play a song, do a calculation, check the weather, or just ask me a question.");
+}
+</script>
+</body>
+</html>
