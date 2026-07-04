@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#050810;
+    --cyan:#2FE3FF;
+    --cyan-dim: rgba(47,227,255,0.35);
+    --amber:#FFB454;
+    --panel: rgba(47,227,255,0.05);
+    --panel-border: rgba(47,227,255,0.22);
+    --text:#DFF7FF;
+    --text-dim:#5E7A88;
+    --danger:#FF5C6C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 50% -10%, rgba(47,227,255,0.12), transparent 55%),
+      repeating-linear-gradient(0deg, rgba(47,227,255,0.025) 0px, rgba(47,227,255,0.025) 1px, transparent 1px, transparent 3px),
+      var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+  }
+  .frame{
+    max-width:760px;
+    margin:0 auto;
+    padding:22px 18px;
+    position:relative;
+    border:1px solid var(--panel-border);
+    border-radius:4px;
+    background:var(--panel);
+  }
+  .frame::before, .frame::after,
+  .frame .bl, .frame .br{
+    content:'';
+    position:absolute;
+    width:20px;height:20px;
+    border-color:var(--cyan);
+    border-style:solid;
+    border-width:0;
+    opacity:.8;
+  }
+  .frame::before{top:-1px;left:-1px;border-top-width:2px;border-left-width:2px;}
+  .frame::after{top:-1px;right:-1px;border-top-width:2px;border-right-width:2px;}
+  .frame .bl{bottom:-1px;left:-1px;border-bottom-width:2px;border-left-width:2px;}
+  .frame .br{bottom:-1px;right:-1px;border-bottom-width:2px;border-right-width:2px;}
+
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:'Orbitron',sans-serif;
+    font-size:10px;letter-spacing:2px;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-right:6px;box-shadow:0 0 6px var(--cyan);animation:blink 1.6s ease-in-out infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .brand{
+    font-family:'Orbitron',sans-serif;
+    font-weight:800;
+    font-size:40px;
+    letter-spacing:6px;
+    margin:6px 0 0;
+    text-align:center;
+    color:var(--cyan);
+    text-shadow:0 0 18px var(--cyan-dim), 0 0 40px rgba(47,227,255,0.15);
+  }
+  .tagline{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:11px;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    margin-top:2px;
+    font-family:'Orbitron',sans-serif;
+  }
+
+  .orb-zone{
+    display:flex;align-items:center;justify-content:center;
+    margin:30px 0 10px;position:relative;height:210px;
+  }
+  .ring{position:absolute;border-radius:50%;border:1px solid var(--cyan-dim);}
+  .ring.spin1{width:170px;height:170px;border-style:dashed;animation:spin 12s linear infinite;}
+  .ring.spin2{width:200px;height:200px;border-top-color:var(--cyan);border-right-color:transparent;border-bottom-color:transparent;border-left-color:transparent;animation:spin 3.5s linear infinite reverse;}
+  .ring.pulse{width:130px;height:130px;animation:pulse 2.4s ease-out infinite;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  @keyframes pulse{0%{transform:scale(.85);opacity:.6;}100%{transform:scale(1.3);opacity:0;}}
+
+  .orb{
+    width:100px;height:100px;border-radius:50%;border:none;cursor:pointer;
+    background:radial-gradient(circle at 35% 30%, #0d1b24, #050810 70%);
+    box-shadow:0 0 26px var(--cyan-dim), inset 0 0 20px rgba(47,227,255,0.25);
+    display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--cyan);
+    transition:box-shadow .3s ease, transform .15s ease;
+    z-index:2;
+  }
+  .orb:hover{transform:scale(1.04);}
+  .orb.active{
+    box-shadow:0 0 46px rgba(255,180,84,0.6), inset 0 0 24px rgba(255,180,84,0.35);
+    color:var(--amber);
+    animation:mic-pulse 0.9s ease-in-out infinite;
+  }
+  .orb.wake{
+    box-shadow:0 0 30px rgba(47,227,255,0.55), inset 0 0 20px rgba(47,227,255,0.3);
+  }
+  @keyframes mic-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+
+  .status{
+    font-family:'Orbitron',sans-serif;
+    font-size:13px;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--text-dim);text-align:center;min-height:18px;margin-bottom:10px;
+  }
+  .status.active{color:var(--amber);}
+  .status.on{color:var(--cyan);}
+  .status.err{color:var(--danger);}
+
+  .wave{display:flex;gap:4px;justify-content:center;align-items:flex-end;height:20px;margin-bottom:8px;}
+  .wave span{width:3px;background:var(--amber);border-radius:2px;animation:bar .9s ease-in-out infinite;opacity:0;}
+  .wave.on span{opacity:1;}
+  .wave span:nth-child(1){animation-delay:0s;} .wave span:nth-child(2){animation-delay:.1s;}
+  .wave span:nth-child(3){animation-delay:.2s;} .wave span:nth-child(4){animation-delay:.3s;}
+  .wave span:nth-child(5){animation-delay:.4s;}
+  @keyframes bar{0%,100%{height:4px;}50%{height:18px;}}
+
+  .controls{display:flex;gap:10px;justify-content:center;align-items:center;margin:6px 0 18px;flex-wrap:wrap;}
+  select, .toggle-label{
+    background:rgba(47,227,255,0.05);border:1px solid var(--panel-border);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:12.5px;padding:7px 12px;border-radius:3px;
+  }
+  select{cursor:pointer;}
+  .toggle-label{display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;}
+  .toggle-label input{accent-color:var(--cyan);}
+  .wake-badge{
+    font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1.5px;
+    padding:4px 10px;border-radius:3px;border:1px solid var(--panel-border);
+    color:var(--text-dim);
+  }
+  .wake-badge.on{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px var(--cyan-dim);}
+
+  .log{text-align:left;max-height:320px;overflow-y:auto;padding-right:4px;}
+  .bubble{padding:10px 14px;border-radius:3px;margin:6px 0;max-width:88%;font-size:14.5px;line-height:1.4;animation:rise .25s ease;border-left:2px solid transparent;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  .bubble.user{margin-left:auto;background:rgba(255,180,84,0.08);border-left-color:var(--amber);text-align:right;}
+  .bubble.aadi{margin-right:auto;background:var(--panel);border-left-color:var(--cyan);}
+  .bubble.error{margin-right:auto;background:rgba(255,92,108,0.08);border-left-color:var(--danger);color:#ffb3ba;}
+  .bubble .who{display:block;font-family:'Orbitron',sans-serif;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px;}
+  .log::-webkit-scrollbar{width:5px;}
+  .log::-webkit-scrollbar-thumb{background:rgba(47,227,255,0.2);border-radius:4px;}
+
+  .hint{color:var(--text-dim);font-size:11.5px;margin-top:14px;line-height:1.7;text-align:center;}
+  .hint b{color:var(--cyan);font-weight:600;}
+</style>
+</head>
+<body>
+<div class="frame">
+  <span class="bl"></span><span class="br"></span>
+  <div class="topbar">
+    <span><span class="dot"></span>SYS ONLINE</span>
+    <span id="wakeBadgeTop" class="wake-badge">WAKE WORD: OFF</span>
+  </div>
+
+  <h1 class="brand">A A D I</h1>
+  <div class="tagline">Autonomous Assistant · Diagnostic Interface</div>
+
+  <div class="orb-zone">
+    <div class="ring pulse"></div>
+    <div class="ring spin1"></div>
+    <div class="ring spin2"></div>
+    <button class="orb" id="orbBtn" title="Tap to speak once">🎤</button>
+  </div>
+
+  <div class="wave" id="wave"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="status" id="status">Tap the orb, or enable wake word below</div>
+
+  <div class="controls">
+    <select id="langSelect">
+      <option value="en-IN">English (India)</option>
+      <option value="hi-IN">Hindi</option>
+      <option value="en-US">English (US)</option>
+    </select>
+    <label class="toggle-label">
+      <input type="checkbox" id="wakeToggle" />
+      🎧 Hands-free — say "Aadi"
+    </label>
+  </div>
+
+  <div class="log" id="log"></div>
+
+  <div class="hint">
+    Say <b>"Aadi"</b> to wake me up · Try <b>"square root of 144"</b> ·
+    <b>"factorial of 6"</b> · <b>"20 percent of 450"</b> · <b>"2 power 10"</b> ·
+    <b>"play kesariya"</b> · <b>"open youtube"</b> · <b>"weather in prayagraj"</b>
+  </div>
+</div>
+
+<script>
+const orbBtn = document.getElementById('orbBtn');
+const statusEl = document.getElementById('status');
+const waveEl = document.getElementById('wave');
+const logEl = document.getElementById('log');
+const langSelect = document.getElementById('langSelect');
+const wakeToggle = document.getElementById('wakeToggle');
+const wakeBadgeTop = document.getElementById('wakeBadgeTop');
+
+let appState = 'idle';
+let wakeModeOn = false;
+
+function setStatus(text, mode){
+  statusEl.textContent = text;
+  statusEl.className = 'status' + (mode ? ' ' + mode : '');
+}
+function setOrb(mode){
+  orbBtn.classList.remove('active','wake');
+  if (mode) orbBtn.classList.add(mode);
+}
+function addBubble(who, text, type){
+  const b = document.createElement('div');
+  b.className = 'bubble ' + (type || (who === 'You' ? 'user' : 'aadi'));
+  b.innerHTML = '<span class="who">' + who + '</span>' + text;
+  logEl.appendChild(b);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+function speak(text, onEnd){
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.03;
+  utter.pitch = 0.95;
+  utter.onend = () => { if (onEnd) onEnd(); };
+  window.speechSynthesis.speak(utter);
+}
+
+const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+let wakeRecognition = null;
+let commandRecognition = null;
+let suppressWakeRestart = false;
+
+const WAKE_ALTERNATES = ['aadi', 'audi', 'aadhi', 'addy', 'hey aadi', 'ok aadi'];
+
+if (!SpeechRecognitionAPI) {
+  setStatus('Speech recognition not supported. Please use Chrome or Edge.', 'err');
+  orbBtn.disabled = true;
+  wakeToggle.disabled = true;
+} else {
+  wakeRecognition = new SpeechRecognitionAPI();
+  wakeRecognition.continuous = true;
+  wakeRecognition.interimResults = true;
+  wakeRecognition.maxAlternatives = 1;
+
+  wakeRecognition.onresult = (event) => {
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const transcript = event.results[i][0].transcript.toLowerCase();
+      if (WAKE_ALTERNATES.some(w => transcript.includes(w))) {
+        suppressWakeRestart = true;
+        try { wakeRecognition.stop(); } catch(e){}
+        activateAssistant();
+        break;
+      }
+    }
+  };
+  wakeRecognition.onend = () => {
+    if (wakeModeOn && !suppressWakeRestart) {
+      setTimeout(() => { try { wakeRecognition.start(); } catch(e){} }, 250);
+    }
+    suppressWakeRestart = false;
+  };
+  wakeRecognition.onerror = (event) => {
+    if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+      setStatus('Microphone permission denied. Please allow mic access.', 'err');
+      wakeModeOn = false;
+      wakeToggle.checked = false;
+      updateWakeBadge();
+    }
+  };
+
+  commandRecognition = new SpeechRecognitionAPI();
+  commandRecognition.continuous = false;
+  commandRecognition.interimResults = false;
+  commandRecognition.maxAlternatives = 1;
+
+  commandRecognition.onstart = () => {
+    appState = 'activeListening';
+    setOrb('active');
+    waveEl.classList.add('on');
+    setStatus('Listening...', 'active');
+  };
+  commandRecognition.onend = () => {
+    waveEl.classList.remove('on');
+  };
+  commandRecognition.onerror = (event) => {
+    setOrb(null);
+    waveEl.classList.remove('on');
+    if (event.error === 'network') {
+      const msg = "I'm having trouble connecting to the network. Please check your internet connection.";
+      setStatus('Connection issue', 'err');
+      addBubble('AADI', msg, 'error');
+      speak(msg, resumeAfterTurn);
+    } else if (event.error === 'no-speech') {
+      const msg = "I didn't catch that. Please try again.";
+      setStatus("Didn't hear you", 'err');
+      speak(msg, resumeAfterTurn);
+    } else if (event.error === 'not-allowed') {
+      setStatus('Microphone permission denied.', 'err');
+    } else {
+      speak("Sorry, I don't understand that.", resumeAfterTurn);
+    }
+  };
+  commandRecognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    addBubble('You', transcript);
+    handleCommand(transcript);
+  };
+}
+
+function updateWakeBadge(){
+  wakeBadgeTop.textContent = 'WAKE WORD: ' + (wakeModeOn ? 'ON' : 'OFF');
+  wakeBadgeTop.className = 'wake-badge' + (wakeModeOn ? ' on' : '');
+  setOrb(wakeModeOn ? 'wake' : null);
+}
+
+wakeToggle.addEventListener('change', () => {
+  wakeModeOn = wakeToggle.checked;
+  updateWakeBadge();
+  if (wakeModeOn) {
+    setStatus('Standing by — say "Aadi"', 'on');
+    try { wakeRecognition.start(); } catch(e){}
+  } else {
+    try { wakeRecognition.stop(); } catch(e){}
+    setStatus('Tap the orb, or enable wake word below');
+    setOrb(null);
+  }
+});
+
+orbBtn.addEventListener('click', () => {
+  if (!commandRecognition) return;
+  if (appState === 'activeListening') {
+    commandRecognition.stop();
+    return;
+  }
+  if (wakeModeOn) { suppressWakeRestart = true; try { wakeRecognition.stop(); } catch(e){} }
+  startCommandListening();
+});
+
+function activateAssistant(){
+  setStatus('Activated', 'active');
+  speak('Yes boss.', () => {
+    startCommandListening();
+  });
+}
+
+function startCommandListening(){
+  commandRecognition.lang = langSelect.value;
+  try { commandRecognition.start(); } catch(e){}
+}
+
+function resumeAfterTurn(){
+  setOrb(null);
+  if (wakeModeOn) {
+    setStatus('Standing by — say "Aadi"', 'on');
+    setTimeout(() => { try { wakeRecognition.start(); } catch(e){} }, 300);
+  } else {
+    setStatus('Tap the orb, or enable wake word below');
+  }
+}
+
+function openTab(url){ window.open(url, '_blank'); }
+
+function respond(text){
+  addBubble('AADI', text);
+  setStatus('Speaking...', 'active');
+  speak(text, resumeAfterTurn);
+}
+
+function factorial(n){
+  if (n < 0 || !Number.isInteger(n)) return null;
+  if (n > 170) return Infinity;
+  let r = 1;
+  for (let i = 2; i <= n; i++) r *= i;
+  return r;
+}
+
+function round(n){
+  return Math.round(n * 100000) / 100000;
+}
+
+function tryAdvancedMath(c){
+  let m;
+
+  if ((m = c.match(/factorial of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*factorial/))) {
+    const n = parseFloat(m[1]);
+    const f = factorial(n);
+    return f === null ? "Factorial only works for whole numbers zero or above." : `The factorial of ${n} is ${f}`;
+  }
+  if (m = c.match(/cube root of (-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    return `The cube root of ${n} is ${round(Math.cbrt(n))}`;
+  }
+  if ((m = c.match(/square root of (-?\d+(\.\d+)?)/)) || (m = c.match(/root of (-?\d+(\.\d+)?)/))) {
+    const n = parseFloat(m[1]);
+    if (n < 0) return "I can't take the square root of a negative number.";
+    return `The square root of ${n} is ${round(Math.sqrt(n))}`;
+  }
+  if ((m = c.match(/square of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*squared/))) {
+    const n = parseFloat(m[1]);
+    return `${n} squared is ${round(n * n)}`;
+  }
+  if ((m = c.match(/cube of (-?\d+(\.\d+)?)/)) || (m = c.match(/(-?\d+(\.\d+)?)\s*cubed/))) {
+    const n = parseFloat(m[1]);
+    return `${n} cubed is ${round(n ** 3)}`;
+  }
+  if (m = c.match(/(-?\d+(\.\d+)?)\s*percent(age)?\s*of\s*(-?\d+(\.\d+)?)/)) {
+    const p = parseFloat(m[1]);
+    const of = parseFloat(m[4]);
+    return `${p} percent of ${of} is ${round((p / 100) * of)}`;
+  }
+  if (m = c.match(/(-?\d+(\.\d+)?)\s*(?:to the power of|power of|power|raised to)\s*(-?\d+(\.\d+)?)/)) {
+    const base = parseFloat(m[1]);
+    const exp = parseFloat(m[3]);
+    return `${base} to the power of ${exp} is ${round(base ** exp)}`;
+  }
+  if (m = c.match(/\bsin(?:e)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Sine of ${m[1]} degrees is ${round(Math.sin(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\bcos(?:ine)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Cosine of ${m[1]} degrees is ${round(Math.cos(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\btan(?:gent)?\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    return `Tangent of ${m[1]} degrees is ${round(Math.tan(parseFloat(m[1]) * Math.PI / 180))}`;
+  }
+  if (m = c.match(/\b(?:natural log|ln)\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    if (n <= 0) return "Logarithm is only defined for positive numbers.";
+    return `The natural log of ${n} is ${round(Math.log(n))}`;
+  }
+  if (m = c.match(/\blog\s*(?:of)?\s*(-?\d+(\.\d+)?)/)) {
+    const n = parseFloat(m[1]);
+    if (n <= 0) return "Logarithm is only defined for positive numbers.";
+    return `The log of ${n} is ${round(Math.log10(n))}`;
+  }
+  return null;
+}
+
+function tryBasicArithmetic(c){
+  let expr = c.replace('calculate', '')
+    .replace(/plus/g, '+').replace(/minus/g, '-')
+    .replace(/times|multiplied by|into/g, '*')
+    .replace(/divided by/g, '/')
+    .trim();
+  if (!/^[0-9+\-*/(). ]+$/.test(expr) || expr === '') return null;
+  try {
+    const result = Function('"use strict";return (' + expr + ')')();
+    return `The answer is ${round(result)}`;
+  } catch (e) {
+    return null;
+  }
+}
+
+const SITES = {
+  'google': 'https://google.com', 'youtube': 'https://youtube.com',
+  'facebook': 'https://facebook.com', 'instagram': 'https://instagram.com',
+  'linkedin': 'https://linkedin.com', 'amazon': 'https://www.amazon.in',
+  'flipkart': 'https://flipkart.com', 'myntra': 'https://myntra.com',
+  'whatsapp': 'https://web.whatsapp.com', 'chat gpt': 'https://chatgpt.com',
+  'chatgpt': 'https://chatgpt.com', 'claude': 'https://claude.ai',
+};
+
+async function handleCommand(rawText){
+  const c = rawText.toLowerCase().trim();
+  setStatus('Thinking...', 'active');
+
+  if (c.startsWith('open ')) {
+    const target = c.replace('open', '').trim();
+    const match = Object.keys(SITES).find(key => target.includes(key));
+    if (match) { openTab(SITES[match]); respond('Opening ' + match); return; }
+  }
+
+  if (c.startsWith('play ')) {
+    const song = rawText.slice(rawText.toLowerCase().indexOf('play') + 4).trim();
+    if (!song) { respond('Which song should I play?'); return; }
+    openTab('https://www.youtube.com/results?search_query=' + encodeURIComponent(song));
+    respond('Playing ' + song + ' on YouTube');
+    return;
+  }
+
+  if (c.includes('time')) {
+    const now = new Date();
+    respond('The time is ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}));
+    return;
+  }
+  if (c.includes('date')) {
+    const now = new Date();
+    respond("Today's date is " + now.toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'}));
+    return;
+  }
+
+  const mathTriggers = ['factorial','square','cube','percent','power','root','sin','cos','tan','log','calculate'];
+  if (mathTriggers.some(t => c.includes(t))) {
+    const adv = tryAdvancedMath(c);
+    if (adv) { respond(adv); return; }
+    const basic = tryBasicArithmetic(c);
+    if (basic) { respond(basic); return; }
+    if (c.startsWith('calculate')) { respond("Sorry, I couldn't calculate that."); return; }
+  }
+
+  if (c.startsWith('search')) {
+    const q = c.replace('search', '').replace('google', '').replace('for', '').trim();
+    openTab('https://www.google.com/search?q=' + encodeURIComponent(q));
+    respond('Searching for ' + q);
+    return;
+  }
+
+  if (c.includes('wikipedia') || c.startsWith('who is') || c.startsWith('what is')) {
+    let q = c.replace('wikipedia', '').replace('who is', '').replace('what is', '').replace('search', '').trim();
+    if (!q) { respond('Who or what should I look up?'); return; }
+    try {
+      const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(q));
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      respond(data.extract || ('I found a page for ' + q + ' but no summary was available.'));
+    } catch (e) {
+      respond("Sorry, I couldn't find anything about " + q + " on Wikipedia.");
+    }
+    return;
+  }
+
+  if (c.includes('joke') || c.includes('make me laugh')) {
+    try {
+      const res = await fetch('https://official-joke-api.appspot.com/random_joke');
+      const data = await res.json();
+      respond(data.setup + ' ... ' + data.punchline);
+    } catch (e) {
+      respond("Why don't skeletons fight each other? They don't have the guts.");
+    }
+    return;
+  }
+
+  if (c.includes('weather')) {
+    let city = c.replace('weather', '').replace('in', '').replace("what's the", '').replace('tell me the', '').trim();
+    if (!city) city = 'lucknow';
+    try {
+      const geo = await (await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(city) + '&count=1')).json();
+      if (!geo.results) { respond("I couldn't find that city."); return; }
+      const { latitude, longitude } = geo.results[0];
+      const w = await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`)).json();
+      respond(`The current temperature in ${city} is ${w.current_weather.temperature} degrees Celsius`);
+    } catch (e) {
+      respond("Sorry, I couldn't fetch the weather. Please check your internet connection.");
+    }
+    return;
+  }
+
+  if (c.includes('hello') || c.includes('hi aadi') || c.includes('hey')) { respond('Hello! How can I help you today?'); return; }
+  if (c.includes('who are you')) {
+    respond("I'm AADI, your personal voice assistant. Ask me to open a website, play a song, do a calculation, or answer a question.");
+    return;
+  }
+
+  respond("Sorry, I don't understand that yet. You can ask me to open a website, play a song, do a calculation, or check the weather.");
+}
+</script>
+</body>
+</html>
