@@ -249,14 +249,29 @@ function addBubble(who, text, type){
   logEl.appendChild(b);
   logEl.scrollTop = logEl.scrollHeight;
 }
+let lastSpokenText = '';
+
+function isLikelyEcho(heard, spoken){
+  if (!spoken) return false;
+  const clean = s => s.replace(/[^a-z0-9\s]/g, '').trim();
+  const h = clean(heard);
+  const s = clean(spoken);
+  if (!h || !s) return false;
+  return s.includes(h) || h.includes(s) || h === s;
+}
+
 function speak(text, onEnd){
   try {
     window.speechSynthesis.cancel();
+    lastSpokenText = text.toLowerCase().trim();
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 1.03;
     utter.pitch = 0.95;
-    utter.onend = () => { if (onEnd) onEnd(); };
-    utter.onerror = () => { if (onEnd) onEnd(); };
+    const clearEcho = () => { setTimeout(() => {
+      if (lastSpokenText === text.toLowerCase().trim()) lastSpokenText = '';
+    }, 4000); };
+    utter.onend = () => { clearEcho(); if (onEnd) onEnd(); };
+    utter.onerror = () => { clearEcho(); if (onEnd) onEnd(); };
     window.speechSynthesis.speak(utter);
   } catch(e) {
     if (onEnd) onEnd();
@@ -295,6 +310,7 @@ if (!SpeechRecognitionAPI) {
   wakeRecognition.onresult = (event) => {
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript.toLowerCase();
+      if (isLikelyEcho(transcript.trim(), lastSpokenText)) continue;
       if (WAKE_ALTERNATES.some(w => transcript.includes(w))) {
         suppressWakeRestart = true;
         try { wakeRecognition.stop(); } catch(e){}
@@ -363,6 +379,10 @@ if (!SpeechRecognitionAPI) {
   commandRecognition.onresult = (event) => {
     turnHandled = true;
     const transcript = event.results[0][0].transcript;
+    if (isLikelyEcho(transcript.toLowerCase().trim(), lastSpokenText)) {
+      resumeAfterTurn();
+      return;
+    }
     addBubble('You', transcript);
     handleCommand(transcript);
   };
@@ -400,7 +420,7 @@ orbBtn.addEventListener('click', () => {
 
 function activateAssistant(){
   setStatus('Activated', 'active');
-  speak('Yes boss.', () => { startCommandListening(); });
+  speak('Yes boss.', () => { setTimeout(startCommandListening, 400); });
 }
 
 function startCommandListening(){
@@ -412,7 +432,7 @@ function resumeAfterTurn(){
   setOrb(null);
   if (wakeModeOn) {
     setStatus('Standing by — say "Aadi"', 'on');
-    scheduleWakeRestart(300);
+    scheduleWakeRestart(500);
   } else {
     setStatus('Tap the orb, or enable wake word below');
   }
