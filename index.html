@@ -257,7 +257,12 @@ function isLikelyEcho(heard, spoken){
   const h = clean(heard);
   const s = clean(spoken);
   if (!h || !s) return false;
-  return s.includes(h) || h.includes(s) || h === s;
+  if (h === s || s.includes(h) || h.includes(s)) return true;
+  const hWords = h.split(' ').filter(Boolean);
+  const sWords = new Set(s.split(' ').filter(Boolean));
+  if (hWords.length === 0) return false;
+  const overlap = hWords.filter(w => sWords.has(w)).length;
+  return (overlap / hWords.length) >= 0.6;
 }
 
 function speak(text, onEnd){
@@ -285,6 +290,8 @@ let commandRecognition = null;
 let suppressWakeRestart = false;
 let wakeRestartTimer = null;
 let turnHandled = false;
+let wakeIsActive = false;
+let commandIsActive = false;
 
 const WAKE_ALTERNATES = ['aadi', 'audi', 'aadhi', 'addy', 'hey aadi', 'ok aadi', 'हाय आदि', 'आदि'];
 
@@ -292,7 +299,7 @@ function scheduleWakeRestart(delay){
   if (!wakeModeOn) return;
   clearTimeout(wakeRestartTimer);
   wakeRestartTimer = setTimeout(() => {
-    if (!wakeModeOn) return;
+    if (!wakeModeOn || wakeIsActive) return;
     try { wakeRecognition.start(); } catch(e) { /* already running, ignore */ }
   }, delay);
 }
@@ -319,8 +326,10 @@ if (!SpeechRecognitionAPI) {
       }
     }
   };
+  wakeRecognition.onstart = () => { wakeIsActive = true; };
   wakeRecognition.onend = () => {
-    if (wakeModeOn && !suppressWakeRestart) scheduleWakeRestart(300);
+    wakeIsActive = false;
+    if (wakeModeOn && !suppressWakeRestart) scheduleWakeRestart(500);
     suppressWakeRestart = false;
   };
   wakeRecognition.onerror = (event) => {
@@ -343,6 +352,7 @@ if (!SpeechRecognitionAPI) {
   commandRecognition.maxAlternatives = 1;
 
   commandRecognition.onstart = () => {
+    commandIsActive = true;
     turnHandled = false;
     appState = 'activeListening';
     setOrb('active');
@@ -350,6 +360,7 @@ if (!SpeechRecognitionAPI) {
     setStatus('Listening...', 'active');
   };
   commandRecognition.onend = () => {
+    commandIsActive = false;
     waveEl.classList.remove('on');
     // Safety net: if the browser gave up silently (no result, no error), don't get stuck
     if (!turnHandled) {
@@ -399,7 +410,7 @@ wakeToggle.addEventListener('change', () => {
   updateWakeBadge();
   if (wakeModeOn) {
     setStatus('Standing by — say "Aadi"', 'on');
-    try { wakeRecognition.start(); } catch(e){}
+    if (!wakeIsActive) { try { wakeRecognition.start(); } catch(e){} }
   } else {
     clearTimeout(wakeRestartTimer);
     try { wakeRecognition.stop(); } catch(e){}
@@ -420,10 +431,11 @@ orbBtn.addEventListener('click', () => {
 
 function activateAssistant(){
   setStatus('Activated', 'active');
-  speak('Yes boss.', () => { setTimeout(startCommandListening, 400); });
+  speak('Yes boss.', () => { setTimeout(startCommandListening, 600); });
 }
 
 function startCommandListening(){
+  if (commandIsActive) return;
   commandRecognition.lang = langSelect.value;
   try { commandRecognition.start(); } catch(e){}
 }
